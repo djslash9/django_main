@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'webapp',  # Added the webapp app to the list of installed apps
 ]
 
 MIDDLEWARE = [

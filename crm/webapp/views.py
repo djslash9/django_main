@@ -1,9 +1,13 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from .forms import RegistrationForm
+from .forms import RegistrationForm, AddClientForm
+from .models import Client
 
 def home(request):
+    
+    # Grab client records
+    clients = Client.objects.all()
     # check the logged in user
     if request.method =='POST':
         username = request.POST['username']
@@ -22,7 +26,7 @@ def home(request):
             messages.error(request, 'Invalid username or password')
             return redirect('home')
     else:
-        return render(request, 'home.html', {})
+        return render(request, 'home.html', {'clients': clients})
 
 def logout_view(request):
     logout(request)
@@ -46,3 +50,37 @@ def register_view(request):
     
     # Ensure that the function always returns an HttpResponse object
     return render(request, 'register.html', {'form': form})
+
+def client(request, pk):
+    if request.user.is_authenticated:
+        # look up the specific client data
+        client_record = Client.objects.get(id=pk)
+        return render(request, 'client.html', {'client_record': client_record})
+    else:
+        messages.error(request, 'You need to be logged in to view this page')
+        return redirect('home')
+    
+def client_delete(request, pk):
+    if request.user.is_authenticated:
+        # look up the specific client data
+        delete_record = Client.objects.get(id=pk)
+        delete_record.delete()
+        messages.success(request, 'Client record has been deleted')
+        return redirect('home')
+    else:
+        messages.error(request, 'You need to be logged in to view this page')
+        return redirect('home')
+
+def add_client(request):
+    form = AddClientForm(request.POST or None)
+    if request.user.is_authenticated:
+        if request.method =="POST":
+            if form.is_valid:
+                add_client = form.save()
+                messages.success(request, 'Client has been added')
+                return redirect('home')
+        return render(request, 'add_client.html', {'form':form})
+                
+    else:
+        messages.error(request, 'You need to be logged in to view this page')
+        return redirect('home')
